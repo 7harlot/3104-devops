@@ -23,6 +23,16 @@ Devolved from **Agile** & **Lean** approaches for operations to work
   - software development life cycle
 - **Scrum**
 - **Scrum Master**
+- **BASH**
+  - Bourne-again shell-unix shell and command language. Most operating system terminals run this language by default. BASH is used to have command line access to your system files, use commands to execute operations, write script files which contain BASH syntax for automating or simplifying tasks
+- **Terminal or shell**
+  - An interface that provides command line access to your machines system. Terminals are used to configure an operating system, perform CRUD operations on system files, execute software and automate tasks.
+- **Node**
+  - "Simply put: server-side JavaScript". *Have you ever ran JavaScript commands in a Chrome developer console? Node can be thought of as the engine behind that console (V8), ripped out and configured to serve as an applications back-end. Node also offers a command line tool called NPM (Node package manager). NPM allows us to install third-party dependencies and interface withNode on the command line
+- *build* or **application build**
+  - Typically some type of compilation process where all relevant project dependencies, source code, media and building some sort of binary or executable containing an application for use by an end-user or machine
+- **build process**
+- **CI/DC pipeline**
 
 #### Why Devops adoption?
 
