@@ -1,36 +1,50 @@
-# This is a basic workflow to help you get started with Actions
-
+# .github/workflows/ci.yml
+# Lab 04: Actions replacement for the Travis config in the PDF.
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+# GITHUB_TOKEN gets only what we list here. Replaces the PAT from the lab.
+permissions:
+  contents: read
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  test:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      # Travis: language: node_js / node_js: "stable"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      # Travis ran this implicitly. Actions needs it spelled out.
+      - run: npm test
+
+  deploy:
+    # Travis: deploy.on.branch: main  (PRs run tests but never deploy)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout (job-level permissions replace the top-level ones)
+      pages: write # publish to Pages
+      id-token: write # Pages verifies the deploy came from this repo
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Travis: local_dir: build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
