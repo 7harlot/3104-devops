@@ -1,50 +1,69 @@
-# .github/workflows/ci.yml
-# Lab 04: Actions replacement for the Travis config in the PDF.
+# .github/workflows/blank.yml
+# Lab 06: Actions version of the extended .travis.yml.
+# Builds the SPA on every push/PR to main; deploys build/ to the gh-pages branch on push to main only.
 name: CI
 
 on:
+  # Travis: branches: only: [master]
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
-# GITHUB_TOKEN gets only what we list here. Replaces the PAT from the lab.
+# GITHUB_TOKEN gets only what we list here. Replaces the PAT ($github_token) from the lab.
 permissions:
   contents: read
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       # Travis: language: node_js / node_js: "stable"
+      # Travis: cache: directories: node_modules  ->  cache: npm (caches ~/.npm, keyed on package-lock.json)
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: npm
 
-      # Travis ran this implicitly. Actions needs it spelled out.
+      # Travis: install: npm install  (npm ci = clean, lockfile-exact install, the CI-correct version)
+      - run: npm ci
+
+      # Travis: script: #- yarn lint   (left off, same as the lab)
+      # - run: npm run lint
+
       - run: npm test
 
-  deploy:
-    # Travis: deploy.on.branch: main  (PRs run tests but never deploy)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read # checkout (job-level permissions replace the top-level ones)
-      pages: write # publish to Pages
-      id-token: write # Pages verifies the deploy came from this repo
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
+      # Travis: script: yarn build
+      - run: npm run build
 
-      # Travis: local_dir: build
-      - uses: actions/upload-pages-artifact@v3
+      # Travis: mv build/index.html build/404.html
+      # cp, not mv: mv leaves no index.html, so even the homepage is served as a 404.
+      - run: cp build/index.html build/404.html
+
+      # Hand build/ to the deploy job (jobs don't share files otherwise).
+      - uses: actions/upload-artifact@v4
         with:
+          name: build
           path: build
 
-      - id: deployment
-        uses: actions/deploy-pages@v4
+  deploy:
+    # Travis: deploy: on: branch: master  (PRs build but never deploy)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # pushes to the gh-pages branch
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build
+
+      # Travis: provider: pages / local_dir: build / github_token / skip_cleanup (not needed)
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          publish_branch: gh-pages

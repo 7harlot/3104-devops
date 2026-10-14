@@ -1,13 +1,14 @@
 # Files to ignore
 
+# Screenshots 
 lab01-ss.png
 confirmation.png
 lab01-ss.png
 lab01-ss2.png
 lecture01.md
-
-
 actions-ss.png
+lab05/branch-commit.png
+lab05/terminal-commands.png
 
 # Dependencies
 node_modules/
