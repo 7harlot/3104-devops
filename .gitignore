@@ -9,3 +9,8 @@ lecture01.md
 
 actions-ss.png
 
+# Dependencies
+node_modules/
+
+# Build output
+build/
