@@ -1,0 +1,6 @@
+# Files Docker should NOT copy into the image with `COPY . /app`
+*.png
+*.docx
+*.md
+.git
+__pycache__/
